@@ -18,89 +18,96 @@
     <body>
         <div id="container"></div>
 
-            <script>
-var container = null;
+<script>
+var container, camera, group,
+    scene, renderer, stats,
+    geometry, material, container;
 
-var camera, scene, renderer;
-var geometry, material, mesh, cylinder;
+var list = {
+    center: {
+        x: 0,
+        y: 0,
+        z: 0,
+        links: ['first', 'second', 'third']
+    },
+    first: {
+        x: 10,
+        y: 10,
+        z: 10,
+        links: ['second', 'third']
+    },
+    second: {
+        x: 20,
+        y: -10,
+        z: 5,
+        links: []
+    },
+    third: {
+        x: 20,
+        y: 30,
+        z: -50,
+        links: []
+    }
+};
 
 init();
 animate();
 
 function init() {
-
+    // camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
-    camera.position.z = 1000;
-
+    camera.position.z = 100;
+    // scene
     scene = new THREE.Scene();
-
-    geometry = new THREE.BoxGeometry(200, 200, 200);
-    // material = new THREE.MeshBasicMaterial({
-    //     color: 0xff0000,
-    //     wireframe: true
-    // });
-    // mesh = new THREE.Mesh(geometry, material);
-    // scene.add(mesh);
-
-    // var geometry2 = new THREE.CylinderGeometry( 50, 50, 300, 10 );
-    // var material2 = new THREE.MeshBasicMaterial( {
-    //     color: 0xffff00,
-    //     wireframe: true
-    // });
-    // cylinder = new THREE.Mesh( geometry2, material2 );
-    // scene.add( cylinder );
-
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     container = document.getElementById( 'container' );
-    controls = new THREE.OrbitControls( camera, container );
+    var controls = new THREE.OrbitControls( camera, container );
+    group = new THREE.Group();
+    scene.add( group );
+
     container.appendChild( renderer.domElement );
     stats = new Stats();
     container.appendChild( stats.dom );
 
-    var PI2 = Math.PI * 2;
-    // var material = new THREE.SpriteCanvasMaterial( {
-    //     color: 0xffffff,
-    //     program: function ( context ) {
-    //         context.beginPath();
-    //         context.arc( 0, 0, 0.5, 0, PI2, true );
-    //         context.fill();
-    //     }
-    // } );
-    var material = new THREE.MeshBasicMaterial( {
-        color: 0xffff00,
-        wireframe: true
-    });
-
-    var geometry = new THREE.Geometry();
-
-    for ( var i = 0; i < 10; i ++ ) {
-        particle = new THREE.Sprite( material );
-        particle.position.x = Math.random() * 2 - 1;
-        particle.position.y = Math.random() * 2 - 1;
-        particle.position.z = Math.random() * 2 - 1;
-        particle.position.normalize();
-        particle.position.multiplyScalar( Math.random() * 10 + 450 );
-        particle.scale.x = particle.scale.y = 10;
-        scene.add( particle );
-        geometry.vertices.push( particle.position );
+    /*
+        dummy generate objects
+     */
+    var keys = Object.keys(list);
+    var geometry = new THREE.SphereGeometry( 2, 32, 32 );
+    var material = new THREE.MeshBasicMaterial( {color: 0xafafa0} );
+    for ( var i = 0, elem, key; i < keys.length; i ++ ) {
+        key = keys[i];
+        elem = list[key];
+        var sphere = new THREE.Mesh( geometry, material );
+        sphere.position.x = elem.x;
+        sphere.position.y = elem.y;
+        sphere.position.z = elem.z;
+        list[key].object = sphere;
+        group.add( sphere );
     }
 
-    var line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: 0xffffff, opacity: 0.5 } ) );
-    scene.add( line );
+    var materialLine = new THREE.LineBasicMaterial({
+        color: 0x0000ff
+    });
 
-
-    var geometry = new THREE.SphereGeometry( 5, 32, 32 );
-    var material = new THREE.MeshBasicMaterial( {color: 0xafafa0} );
-    var sphere = new THREE.Mesh( geometry, material );
-    sphere.position.x = Math.random() * 2 - 1;
-    sphere.position.y = Math.random() * 2 - 1;
-    sphere.position.z = Math.random() * 2 - 1;
-    // sphere.position.normalize();
-    sphere.position.multiplyScalar( Math.random() * 10 + 450 );
-    // sphere.scale.x = sphere.scale.y = 10;
-    scene.add( sphere );
+    /*
+        Dummy generate links
+     */
+    for ( var i = 0, key, elem; i < keys.length; i ++ ) {
+        key = keys[i];
+        elem = list[key];
+        for ( var j = 0; j < elem.links.length; j ++ ) {
+            var geometry = new THREE.Geometry();
+            geometry.vertices.push(
+                elem.object.position,
+                list[elem.links[j]].object.position
+            );
+            var line = new THREE.Line( geometry, materialLine );
+            group.add( line );
+        }
+    }
 
     staticInit();
 }
@@ -115,9 +122,10 @@ function staticInit() {
 
 function animate() {
     requestAnimationFrame(animate);
+    var time = Date.now() * 0.001;
+    group.rotation.y = time * 0.1;
     renderer.render(scene, camera);
 }
-        </script>
-
+</script>
     </body>
 </html>
