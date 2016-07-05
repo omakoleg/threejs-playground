@@ -1,0 +1,123 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <title>Constellation display</title>
+        <meta charset="utf-8">
+
+        <style type="text/css">
+            body {
+                background-color: #000000;
+                overflow: hidden;
+            }
+        </style> 
+        <script src="three.min.js"></script>
+        <script src="js/OrbitControls.js"></script>
+        <script src="js/stats.min.js"></script>
+
+    </head>
+    <body>
+        <div id="container"></div>
+
+            <script>
+var container = null;
+
+var camera, scene, renderer;
+var geometry, material, mesh, cylinder;
+
+init();
+animate();
+
+function init() {
+
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+    camera.position.z = 1000;
+
+    scene = new THREE.Scene();
+
+    geometry = new THREE.BoxGeometry(200, 200, 200);
+    // material = new THREE.MeshBasicMaterial({
+    //     color: 0xff0000,
+    //     wireframe: true
+    // });
+    // mesh = new THREE.Mesh(geometry, material);
+    // scene.add(mesh);
+
+    // var geometry2 = new THREE.CylinderGeometry( 50, 50, 300, 10 );
+    // var material2 = new THREE.MeshBasicMaterial( {
+    //     color: 0xffff00,
+    //     wireframe: true
+    // });
+    // cylinder = new THREE.Mesh( geometry2, material2 );
+    // scene.add( cylinder );
+
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    container = document.getElementById( 'container' );
+    controls = new THREE.OrbitControls( camera, container );
+    container.appendChild( renderer.domElement );
+    stats = new Stats();
+    container.appendChild( stats.dom );
+
+    var PI2 = Math.PI * 2;
+    // var material = new THREE.SpriteCanvasMaterial( {
+    //     color: 0xffffff,
+    //     program: function ( context ) {
+    //         context.beginPath();
+    //         context.arc( 0, 0, 0.5, 0, PI2, true );
+    //         context.fill();
+    //     }
+    // } );
+    var material = new THREE.MeshBasicMaterial( {
+        color: 0xffff00,
+        wireframe: true
+    });
+
+    var geometry = new THREE.Geometry();
+
+    for ( var i = 0; i < 10; i ++ ) {
+        particle = new THREE.Sprite( material );
+        particle.position.x = Math.random() * 2 - 1;
+        particle.position.y = Math.random() * 2 - 1;
+        particle.position.z = Math.random() * 2 - 1;
+        particle.position.normalize();
+        particle.position.multiplyScalar( Math.random() * 10 + 450 );
+        particle.scale.x = particle.scale.y = 10;
+        scene.add( particle );
+        geometry.vertices.push( particle.position );
+    }
+
+    var line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: 0xffffff, opacity: 0.5 } ) );
+    scene.add( line );
+
+
+    var geometry = new THREE.SphereGeometry( 5, 32, 32 );
+    var material = new THREE.MeshBasicMaterial( {color: 0xafafa0} );
+    var sphere = new THREE.Mesh( geometry, material );
+    sphere.position.x = Math.random() * 2 - 1;
+    sphere.position.y = Math.random() * 2 - 1;
+    sphere.position.z = Math.random() * 2 - 1;
+    // sphere.position.normalize();
+    sphere.position.multiplyScalar( Math.random() * 10 + 450 );
+    // sphere.scale.x = sphere.scale.y = 10;
+    scene.add( sphere );
+
+    staticInit();
+}
+
+function staticInit() {
+    window.addEventListener( 'resize', function() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+    }, false );
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+}
+        </script>
+
+    </body>
+</html>
